@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-# mermaidView
-MermaidView para ser executado local
-=======
 # MermaidView
 
 Uma aplicação Python para visualizar e exportar diagramas [Mermaid](https://mermaid.js.org/) para PNG/SVG.
