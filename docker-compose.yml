@@ -4,11 +4,11 @@
 version: '3.8'
 
 services:
-  mermaid-view:
+  mermaidview:
     build:
       context: .
       dockerfile: docker/Dockerfile
-    container_name: mermaid-view
+    container_name: mermaidview
     ports:
       - "8000:8000"
     environment:

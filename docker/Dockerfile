@@ -33,9 +33,11 @@ LABEL description="MermaidView - Mermaid Diagram Visualizer"
 LABEL version="1.0.0"
 
 # Environment variables
+# PLAYWRIGHT_BROWSERS_PATH: install browsers in /app so the mermaid user can use them
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app/src \
+    PLAYWRIGHT_BROWSERS_PATH=/app/ms-playwright \
     MERMAID_VIEW_HOST=0.0.0.0 \
     MERMAID_VIEW_PORT=8000 \
     MERMAID_VIEW_HEADLESS=true \
@@ -44,9 +46,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# Install runtime dependencies for Playwright
+# Install runtime dependencies for Playwright (system libs)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    # Playwright dependencies
     libnss3 \
     libnspr4 \
     libatk1.0-0 \
@@ -64,18 +65,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libasound2 \
     libpango-1.0-0 \
     libcairo2 \
-    # Fonts
     fonts-liberation \
     fonts-noto-color-emoji \
-    # Clean up
     && rm -rf /var/lib/apt/lists/*
 
 # Copy virtual environment from builder
 COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Install Playwright browsers
+# Create app dirs first so Playwright installs to a known path
+RUN mkdir -p /app/ms-playwright /app/output /app/diagrams
+
+# Install Playwright browsers to /app/ms-playwright (so mermaid user can use them later)
 RUN playwright install chromium
+
+# Install Playwright system dependencies (required for Chromium in container)
+RUN playwright install-deps chromium || true
 
 # Copy application code
 COPY src/ /app/src/
@@ -85,11 +90,7 @@ COPY README.md /app/
 # Install the package in editable mode
 RUN pip install -e .
 
-# Create directories for output and diagrams
-RUN mkdir -p /app/output /app/diagrams && \
-    chmod 777 /app/output /app/diagrams
-
-# Create non-root user for security
+# Create non-root user and give ownership of /app (including ms-playwright)
 RUN useradd -m -u 1000 mermaid && \
     chown -R mermaid:mermaid /app
 USER mermaid
