@@ -1,6 +1,10 @@
 MIT License
 
+<<<<<<< HEAD
 Copyright (c) 2026 Daniel Pitthan Silveira
+=======
+Copyright (c) 2024 MermaidView Team
+>>>>>>> 5d1e4d6 (feat: implementação inicial MermaidView - visualizador de diagramas Mermaid)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

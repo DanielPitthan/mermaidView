@@ -1,0 +1,65 @@
+# MermaidView Docker Compose Configuration
+# Use: docker-compose up --build
+
+version: '3.8'
+
+services:
+  mermaid-view:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: mermaid-view
+    ports:
+      - "8000:8000"
+    environment:
+      # Server configuration
+      - MERMAID_VIEW_HOST=0.0.0.0
+      - MERMAID_VIEW_PORT=8000
+      - MERMAID_VIEW_DEBUG=false
+      # Renderer configuration
+      - MERMAID_VIEW_HEADLESS=true
+      - MERMAID_VIEW_TIMEOUT=30000
+      - MERMAID_VIEW_USE_FALLBACK=true
+      # Default diagram settings
+      - MERMAID_VIEW_THEME=default
+      - MERMAID_VIEW_WIDTH=800
+      - MERMAID_VIEW_HEIGHT=600
+      - MERMAID_VIEW_SCALE=2.0
+    volumes:
+      # Persist output files
+      - ./output:/app/output
+      # Persist diagram metadata
+      - ./diagrams:/app/diagrams
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8000/health').raise_for_status()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Optional: Development service with hot reload
+  mermaid-view-dev:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: mermaid-view-dev
+    ports:
+      - "8001:8000"
+    environment:
+      - MERMAID_VIEW_HOST=0.0.0.0
+      - MERMAID_VIEW_PORT=8000
+      - MERMAID_VIEW_DEBUG=true
+      - MERMAID_VIEW_HEADLESS=true
+    volumes:
+      # Mount source code for development
+      - ./src:/app/src:ro
+      - ./output:/app/output
+      - ./diagrams:/app/diagrams
+    command: ["mermaid-view", "serve", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    profiles:
+      - dev
+
+networks:
+  default:
+    name: mermaid-view-network
