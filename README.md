@@ -87,7 +87,24 @@ docker pull pitthan/mermaidview:latest
 docker run -d -p 8000:8000 --name mermaidview pitthan/mermaidview:latest
 ```
 
-Acesse http://localhost:8000 no navegador. Para parar o container: `docker stop mermaidview`. Para remover: `docker rm mermaidview`.
+**Abrir a aplicação no navegador:** no seu computador (fora do Docker), abra o navegador e acesse:
+
+- **http://localhost:8000** ou  
+- **http://127.0.0.1:8000**
+
+A interface web do MermaidView deve carregar nessa URL. O servidor dentro do container escuta em `0.0.0.0:8000`; o `-p 8000:8000` expõe essa porta no seu host.
+
+**Comandos úteis:**
+- Ver se o container está rodando: `docker ps` (deve aparecer `mermaidview` e porta `8000/tcp`)
+- Ver logs: `docker logs mermaidview`
+- Parar: `docker stop mermaidview`
+- Remover: `docker rm mermaidview` (após parar)
+
+**Não abre no navegador?**
+1. Confirme que o container está em execução: `docker ps`. Se não aparecer `mermaidview`, suba de novo com o comando `docker run` acima.
+2. Use exatamente **http://localhost:8000** (ou **http://127.0.0.1:8000**) na barra de endereços do navegador.
+3. Se já existir um container com o nome `mermaidview`, remova antes: `docker rm -f mermaidview` e rode `docker run` novamente.
+4. Para ver o log em tempo real enquanto testa: `docker run -p 8000:8000 --name mermaidview pitthan/mermaidview:latest` (sem `-d`). Deixe o terminal aberto, acesse http://localhost:8000 no navegador e confira se aparecem linhas `GET /` no log.
 
 ### Início Rápido com Docker (build local)
 
