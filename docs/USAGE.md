@@ -258,6 +258,10 @@ docker run -d \
   -v $(pwd)/output:/app/output \
   mermaid-view
 
+ou
+
+docker run -d --name mermaid-view -p 8000:8000 -v ${PWD}\output:/app/output pitthan/mermaidview:latest
+
 # Stop container
 docker stop mermaid-view
 ```
