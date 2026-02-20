@@ -121,11 +121,21 @@ Open http://localhost:8000 in your browser.
 2. **Live Preview**: See the rendered diagram in real-time
 3. **Theme Selection**: Switch between themes
 4. **Download**: Export as PNG or SVG
-5. **Examples**: Quick-load example diagrams
+5. **Fullscreen Preview**: Expand only the preview area for focused visualization
+6. **Pan and Navigation**: Click and drag inside preview to navigate the rendered diagram
+7. **Zoom Controls**: Use toolbar buttons or mouse wheel to zoom in/out and reset view
+8. **Examples**: Quick-load example diagrams
 
 ### Keyboard shortcuts
 
 - `Ctrl+Enter`: Render diagram
+- `Esc`: Exit fullscreen preview
+
+### Mouse interactions in preview
+
+- Click and drag: pan (navigate) the diagram
+- Mouse wheel: zoom in/out
+- `↺` button: reset zoom and position
 
 ## API Usage
 

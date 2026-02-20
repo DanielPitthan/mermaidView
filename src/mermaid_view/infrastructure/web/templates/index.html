@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="mixed">
+<html lang="pt-BR" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -70,6 +70,10 @@
             color: var(--text-dark);
             min-height: 100vh;
             transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        [data-theme="dark"] body {
+            background: radial-gradient(circle at top right, #172744 0%, #0b1630 45%, #071022 100%);
         }
 
         /* Header */
@@ -196,7 +200,7 @@
 
         /* Container */
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
             padding: 20px;
         }
@@ -204,7 +208,7 @@
         /* Main Content */
         .main-content {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 360px 1fr;
             gap: 20px;
             min-height: calc(100vh - 220px);
             margin-top: 20px;
@@ -234,6 +238,12 @@
             border: 1px solid var(--border);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
             transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        [data-theme="dark"] .panel {
+            background: rgba(18, 28, 51, 0.92);
+            border-color: rgba(129, 160, 218, 0.2);
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
         }
 
         .panel-header {
@@ -288,16 +298,118 @@
             border-radius: 8px;
             padding: 20px;
             min-height: 400px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: auto;
+            display: block;
+            overflow: hidden;
             border: 1px solid var(--border-light);
             transition: background-color 0.3s ease;
+            position: relative;
+            cursor: grab;
+            user-select: none;
+        }
+
+        .preview-container.is-panning {
+            cursor: grabbing;
+        }
+
+        .preview-toolbar {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 20;
+            background: rgba(12, 24, 45, 0.75);
+            border: 1px solid rgba(129, 160, 218, 0.3);
+            border-radius: 10px;
+            padding: 8px;
+            backdrop-filter: blur(4px);
+        }
+
+        .preview-tool-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(58, 83, 126, 0.95);
+            color: #f0f6ff;
+            font-size: 1rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .preview-tool-btn:hover {
+            background: rgba(77, 108, 161, 0.95);
+        }
+
+        .zoom-level {
+            min-width: 52px;
+            text-align: center;
+            color: #f0f6ff;
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+
+        .preview-container:fullscreen {
+            width: 100vw;
+            height: 100vh;
+            max-width: 100vw;
+            max-height: 100vh;
+            margin: 0;
+            border-radius: 0;
+            background: var(--bg-panel);
+            border: none;
+            padding: 24px;
+        }
+
+        .preview-container:-webkit-full-screen {
+            width: 100vw;
+            height: 100vh;
+            max-width: 100vw;
+            max-height: 100vh;
+            margin: 0;
+            border-radius: 0;
+            background: var(--bg-panel);
+            border: none;
+            padding: 24px;
+        }
+
+        .preview-container.is-pseudo-fullscreen {
+            position: fixed;
+            inset: 20px;
+            z-index: 1200;
+            border-radius: 12px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+            padding: 24px;
+            min-height: auto;
+        }
+
+        body.no-scroll {
+            overflow: hidden;
+        }
+
+        .btn.is-active {
+            background: var(--primary);
+            color: var(--text-light);
         }
 
         #preview {
-            max-width: 100%;
+            width: max-content;
+            transform-origin: top left;
+            will-change: transform;
+            transition: transform 0.05s linear;
+        }
+
+        #preview svg {
+            display: block;
+            max-width: none;
+            transform-origin: top left;
         }
 
         /* Controls */
@@ -440,6 +552,7 @@
             border-radius: 12px;
             border: 1px solid var(--border);
             transition: background-color 0.3s ease;
+            max-width: 360px;
         }
 
         .examples h3 {
@@ -591,9 +704,24 @@
                             </svg>
                             Download
                         </button>
+                        <button class="btn btn-secondary" id="fullscreen-btn" type="button" aria-pressed="false" title="Entrar em tela cheia" aria-label="Alternar visualização em tela cheia">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <polyline points="9 21 3 21 3 15"></polyline>
+                                <line x1="21" y1="3" x2="14" y2="10"></line>
+                                <line x1="3" y1="21" x2="10" y2="14"></line>
+                            </svg>
+                            <span id="fullscreen-label">Tela cheia</span>
+                        </button>
                     </div>
                 </div>
-                <div class="preview-container">
+                <div class="preview-container" id="preview-container">
+                    <div class="preview-toolbar" aria-label="Controles de navegação do preview">
+                        <button class="preview-tool-btn" id="zoom-out-btn" type="button" title="Reduzir zoom" aria-label="Reduzir zoom">−</button>
+                        <span class="zoom-level" id="zoom-level">100%</span>
+                        <button class="preview-tool-btn" id="zoom-in-btn" type="button" title="Aumentar zoom" aria-label="Aumentar zoom">+</button>
+                        <button class="preview-tool-btn" id="zoom-reset-btn" type="button" title="Resetar zoom e posição" aria-label="Resetar visualização">↺</button>
+                    </div>
                     <div id="preview" class="mermaid"></div>
                 </div>
                 <div class="loading" id="loading">
@@ -636,7 +764,7 @@
 
         // Carregar tema salvo
         function loadSavedTheme() {
-            const savedTheme = localStorage.getItem('appTheme') || 'mixed';
+            const savedTheme = localStorage.getItem('appTheme') || 'dark';
             document.documentElement.setAttribute('data-theme', savedTheme);
             appThemeSelect.value = savedTheme;
         }
@@ -774,12 +902,215 @@
         const preview = document.getElementById('preview');
         const renderBtn = document.getElementById('render-btn');
         const downloadBtn = document.getElementById('download-btn');
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+        const fullscreenLabel = document.getElementById('fullscreen-label');
         const themeSelect = document.getElementById('theme-select');
         const formatSelect = document.getElementById('format-select');
         const loading = document.getElementById('loading');
         const errorMessage = document.getElementById('error-message');
+        const previewContainer = document.getElementById('preview-container');
+        const zoomInBtn = document.getElementById('zoom-in-btn');
+        const zoomOutBtn = document.getElementById('zoom-out-btn');
+        const zoomResetBtn = document.getElementById('zoom-reset-btn');
+        const zoomLevelDisplay = document.getElementById('zoom-level');
 
         let currentImageData = null;
+        let isPseudoFullscreen = false;
+        let zoomLevel = 1;
+        let isPanning = false;
+        let panStartX = 0;
+        let panStartY = 0;
+        let panX = 0;
+        let panY = 0;
+        let panStartOffsetX = 0;
+        let panStartOffsetY = 0;
+
+        const zoomConfig = {
+            min: 0.25,
+            max: 4,
+            step: 0.15
+        };
+
+        function getPreviewSvg() {
+            return preview.querySelector('svg');
+        }
+
+        function getBaseSvgDimensions(svg) {
+            if (!svg) {
+                return null;
+            }
+
+            if (!svg.dataset.baseWidth || !svg.dataset.baseHeight) {
+                const viewBox = svg.viewBox && svg.viewBox.baseVal;
+                const rect = svg.getBoundingClientRect();
+                const width = (viewBox && viewBox.width) || parseFloat(svg.getAttribute('width')) || rect.width || 800;
+                const height = (viewBox && viewBox.height) || parseFloat(svg.getAttribute('height')) || rect.height || 600;
+                svg.dataset.baseWidth = String(width);
+                svg.dataset.baseHeight = String(height);
+            }
+
+            return {
+                width: parseFloat(svg.dataset.baseWidth),
+                height: parseFloat(svg.dataset.baseHeight)
+            };
+        }
+
+        function applyZoom() {
+            const svg = getPreviewSvg();
+            if (!svg) {
+                zoomLevelDisplay.textContent = `${Math.round(zoomLevel * 100)}%`;
+                preview.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`;
+                return;
+            }
+
+            const baseDimensions = getBaseSvgDimensions(svg);
+            if (!baseDimensions) {
+                return;
+            }
+
+            svg.style.width = `${baseDimensions.width}px`;
+            svg.style.height = `${baseDimensions.height}px`;
+            preview.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`;
+            zoomLevelDisplay.textContent = `${Math.round(zoomLevel * 100)}%`;
+        }
+
+        function clampZoom(value) {
+            return Math.max(zoomConfig.min, Math.min(zoomConfig.max, value));
+        }
+
+        function setZoom(nextZoom, anchorPoint) {
+            const currentZoom = zoomLevel;
+            const targetZoom = clampZoom(nextZoom);
+            if (targetZoom === currentZoom) {
+                return;
+            }
+
+            const rect = previewContainer.getBoundingClientRect();
+            const anchorX = anchorPoint ? anchorPoint.x : rect.width / 2;
+            const anchorY = anchorPoint ? anchorPoint.y : rect.height / 2;
+            const zoomRatio = targetZoom / currentZoom;
+
+            panX = anchorX - ((anchorX - panX) * zoomRatio);
+            panY = anchorY - ((anchorY - panY) * zoomRatio);
+
+            zoomLevel = targetZoom;
+            applyZoom();
+        }
+
+        function resetView() {
+            zoomLevel = 1;
+            centerView();
+            applyZoom();
+        }
+
+        function centerView() {
+            const svg = getPreviewSvg();
+            if (!svg) {
+                panX = 0;
+                panY = 0;
+                return;
+            }
+
+            const baseDimensions = getBaseSvgDimensions(svg);
+            if (!baseDimensions) {
+                panX = 0;
+                panY = 0;
+                return;
+            }
+
+            const rect = previewContainer.getBoundingClientRect();
+            panX = (rect.width - (baseDimensions.width * zoomLevel)) / 2;
+            panY = (rect.height - (baseDimensions.height * zoomLevel)) / 2;
+        }
+
+        function getFullscreenElement() {
+            return document.fullscreenElement || document.webkitFullscreenElement || null;
+        }
+
+        function hasNativeFullscreenSupport(element) {
+            return Boolean(element.requestFullscreen || element.webkitRequestFullscreen);
+        }
+
+        async function requestContainerFullscreen() {
+            if (previewContainer.requestFullscreen) {
+                await previewContainer.requestFullscreen();
+                return;
+            }
+
+            if (previewContainer.webkitRequestFullscreen) {
+                previewContainer.webkitRequestFullscreen();
+            }
+        }
+
+        async function exitNativeFullscreen() {
+            if (document.exitFullscreen) {
+                await document.exitFullscreen();
+                return;
+            }
+
+            if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
+        }
+
+        function setPseudoFullscreen(active) {
+            isPseudoFullscreen = active;
+            previewContainer.classList.toggle('is-pseudo-fullscreen', active);
+            document.body.classList.toggle('no-scroll', active);
+        }
+
+        function setFullscreenButtonState(active) {
+            fullscreenBtn.setAttribute('aria-pressed', String(active));
+            fullscreenBtn.classList.toggle('is-active', active);
+            fullscreenLabel.textContent = active ? 'Sair da tela cheia' : 'Tela cheia';
+            fullscreenBtn.title = active ? 'Sair da tela cheia' : 'Entrar em tela cheia';
+        }
+
+        function isFullscreenActive() {
+            return Boolean(getFullscreenElement()) || isPseudoFullscreen;
+        }
+
+        async function toggleFullscreen() {
+            const nativeActive = Boolean(getFullscreenElement());
+
+            if (nativeActive || isPseudoFullscreen) {
+                if (nativeActive) {
+                    await exitNativeFullscreen();
+                }
+
+                if (isPseudoFullscreen) {
+                    setPseudoFullscreen(false);
+                }
+
+                setFullscreenButtonState(false);
+                fullscreenBtn.focus();
+                return;
+            }
+
+            if (hasNativeFullscreenSupport(previewContainer)) {
+                try {
+                    await requestContainerFullscreen();
+                    setFullscreenButtonState(true);
+                    return;
+                } catch (_) {
+                    setPseudoFullscreen(true);
+                }
+            } else {
+                setPseudoFullscreen(true);
+            }
+
+            setFullscreenButtonState(true);
+        }
+
+        function handleFullscreenChange() {
+            if (!getFullscreenElement() && !isPseudoFullscreen) {
+                setFullscreenButtonState(false);
+            } else if (getFullscreenElement()) {
+                setFullscreenButtonState(true);
+            }
+
+            applyZoom();
+        }
 
         // =============================================
         // Funções de Renderização
@@ -813,6 +1144,14 @@
                 await mermaid.run({
                     nodes: [preview]
                 });
+
+                const svg = getPreviewSvg();
+                if (svg) {
+                    delete svg.dataset.baseWidth;
+                    delete svg.dataset.baseHeight;
+                }
+
+                resetView();
 
                 downloadBtn.disabled = false;
 
@@ -892,7 +1231,85 @@
         
         renderBtn.addEventListener('click', renderPreview);
         downloadBtn.addEventListener('click', downloadDiagram);
+        fullscreenBtn.addEventListener('click', () => {
+            toggleFullscreen();
+        });
         themeSelect.addEventListener('change', renderPreview);
+
+        zoomInBtn.addEventListener('click', () => {
+            setZoom(zoomLevel + zoomConfig.step);
+        });
+
+        zoomOutBtn.addEventListener('click', () => {
+            setZoom(zoomLevel - zoomConfig.step);
+        });
+
+        zoomResetBtn.addEventListener('click', () => {
+            resetView();
+        });
+
+        previewContainer.addEventListener('wheel', (e) => {
+            if (!getPreviewSvg()) {
+                return;
+            }
+
+            e.preventDefault();
+            const direction = e.deltaY < 0 ? 1 : -1;
+            setZoom(zoomLevel + (direction * zoomConfig.step), {
+                x: e.clientX - previewContainer.getBoundingClientRect().left,
+                y: e.clientY - previewContainer.getBoundingClientRect().top
+            });
+        }, { passive: false });
+
+        previewContainer.addEventListener('pointerdown', (e) => {
+            if (e.button !== 0 || e.target.closest('.preview-toolbar') || !getPreviewSvg()) {
+                return;
+            }
+
+            isPanning = true;
+            panStartX = e.clientX;
+            panStartY = e.clientY;
+            panStartOffsetX = panX;
+            panStartOffsetY = panY;
+            previewContainer.classList.add('is-panning');
+            previewContainer.setPointerCapture(e.pointerId);
+        });
+
+        previewContainer.addEventListener('pointermove', (e) => {
+            if (!isPanning) {
+                return;
+            }
+
+            const deltaX = e.clientX - panStartX;
+            const deltaY = e.clientY - panStartY;
+            panX = panStartOffsetX + deltaX;
+            panY = panStartOffsetY + deltaY;
+            applyZoom();
+        });
+
+        previewContainer.addEventListener('pointerup', (e) => {
+            if (!isPanning) {
+                return;
+            }
+
+            isPanning = false;
+            previewContainer.classList.remove('is-panning');
+            previewContainer.releasePointerCapture(e.pointerId);
+        });
+
+        previewContainer.addEventListener('pointercancel', () => {
+            isPanning = false;
+            previewContainer.classList.remove('is-panning');
+        });
+
+        window.addEventListener('resize', () => {
+            if (!isPanning) {
+                applyZoom();
+            }
+        });
+
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
 
         // Botões de exemplo
         document.querySelectorAll('[data-example]').forEach(btn => {
@@ -913,6 +1330,14 @@
             }
         });
 
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && isPseudoFullscreen) {
+                setPseudoFullscreen(false);
+                setFullscreenButtonState(false);
+                fullscreenBtn.focus();
+            }
+        });
+
         // =============================================
         // Inicialização
         // =============================================
@@ -920,6 +1345,7 @@
         // Carregar preferências salvas
         loadSavedTheme();
         loadSavedLogo();
+        applyZoom();
         
         // Renderização inicial
         renderPreview();
